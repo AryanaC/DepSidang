@@ -74,3 +74,29 @@
       @apply bg-background text-foreground;
     }
   }
+
+
+  .masonry-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -1rem; /* gutter size offset */
+    width: auto;
+  }
+  
+  .masonry-grid > * {
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .masonry-grid {
+      flex-direction: column;
+    }
+  
+    .masonry-grid::before {
+      content: '';
+      display: block;
+      width: 1rem; /* gutter size */
+    }
+  }
+  

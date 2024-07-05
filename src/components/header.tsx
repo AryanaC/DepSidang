@@ -28,15 +28,15 @@ const Header: React.FC = () => {
   return (
     <header
       className={`fixed w-full top-0 flex items-center justify-between h-[6.5rem] px-5 md:px-6 z-50 transition-colors duration-300 ${
-        isScrolled ? "bg-black/90" : "bg-transparent"
+        isScrolled ? "bg-black/90" : "bg-black/50"
       }`}
     >
       <div className="flex items-center gap-4">
         <Link
           href="/"
-          className="text-white flex items-center gap-2 text-lg font-semibold"
+          className="text-white flex items-end gap-2 font-semibold text-lg md:text-2xl uppercase"
         >
-          LOGO
+          Puri <br /> Agung <span className="font-light">Kerambitan</span>
           <span className="sr-only"></span>
         </Link>
       </div>

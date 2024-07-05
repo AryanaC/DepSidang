@@ -16,7 +16,9 @@ interface NavigationLink {
 const LINKS: NavigationLink[] = [
   { link: "/", label: "Home" },
   { link: "/about", label: "About" },
-  { link: "/contact", label: "Contact" },
+  { link: "/gallery", label: "Gallery" },
+  { link: "/virtual-map", label: "Virtual Map" },
+  { link: "/rating", label: "Rating" },
 ];
 
 const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {
@@ -38,7 +40,7 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {
           key={index}
           href={item.link}
           onClick={() => setActive(item.link)}
-          className={`text-gray-300 transition-all ease-out duration-50 uppercase tracking-widest py-3 px-4 hover:border-b-[1.5px] hover:text-white ${
+          className={`text-gray-300 transition-all ease-out duration-50 uppercase tracking-widest py-3 px-3 hover:border-b-[1.5px] hover:text-white ${
             isMobile ? "md:hidden" : ""
           } ${activeLink === item.link ? "border-b-[1.5px] font-normal" : "font-light"}`}
         >

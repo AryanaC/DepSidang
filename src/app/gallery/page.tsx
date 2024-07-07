@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { IGallery } from "@/types/gallery";
 import { getGalery } from "../api/gallery/route";
 import Image from "next/image";
+import Modal from "@/components/ui/modal";
 
 export default function Galery() {
   return (
@@ -24,6 +25,8 @@ export default function Galery() {
 const GallerySection = () => {
   const [data, setData] = useState<IGallery[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<IGallery | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,14 +43,24 @@ const GallerySection = () => {
     fetchData();
   }, []);
 
+  const handleCardClick = (card: IGallery) => {
+    setSelectedImage(card);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage(null);
+  };
+
   return (
-    <section className="min-h-svh bg-white p-3 md:p-28">
-      <h1 className="text-2xl font-bold text-center">Our Gallery</h1>
-      <div className="grid grid-cols-3">
+    <section className="min-h-svh bg-white p-3 md:p-10">
+      <h1 className="text-2xl font-bold text-center mt-24 md:mt-28 mb-10">Our Gallery</h1>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {data.map((card) => (
-          <Card>
+          <Card key={card.id} onClick={() => handleCardClick(card)} className="cursor-pointer">
             <CardContent className="p-0">
-              <div className="relative w-full h-40">
+              <div className="relative w-full h-36 md:h-52">
                 <Image fill src={card.image} alt="" className="bg-cover" />
               </div>
             </CardContent>
@@ -57,6 +70,14 @@ const GallerySection = () => {
           </Card>
         ))}
       </div>
+      {selectedImage && (
+        <Modal
+          image={selectedImage.image}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          data={selectedImage}
+        />
+      )}
     </section>
   );
 };

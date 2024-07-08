@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { SVGProps, useEffect, useState } from "react";
 import { IGallery } from "@/types/gallery";
 import { getGalery } from "../api/gallery/route";
 import Image from "next/image";
@@ -64,8 +64,11 @@ const GallerySection = () => {
                 <Image fill src={card.image} alt="" className="bg-cover" />
               </div>
             </CardContent>
-            <CardFooter>
-              <p>Card Footer</p>
+            <CardFooter className="p-0">
+              <div className="w-full flex justify-end p-3">
+                <StarIcon />
+                {card.rating}
+              </div>
             </CardFooter>
           </Card>
         ))}
@@ -81,3 +84,23 @@ const GallerySection = () => {
     </section>
   );
 };
+
+
+function StarIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}

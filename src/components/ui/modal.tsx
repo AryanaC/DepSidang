@@ -3,6 +3,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { Button } from "./button";
 import { IGallery } from "@/types/gallery";
+import Link from "next/link";
 
 interface ModalProps {
   image: string;
@@ -35,7 +36,10 @@ const Modal: FC<ModalProps> = ({ image, isOpen, onClose, data }) => {
                 <X />
             </Button>
           <h2 className="text-2xl font-bold mb-4">{data?.information.judul_foto}</h2>
-          <p>{data?.information.deskripsi}</p>
+          <p className="mb-7">{data?.information.deskripsi}</p>
+          <Link href={`/rating/${data?.id_galery}`}>
+            <Button>Comment</Button>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { Base } from "./base";
 import { IGallery } from "./gallery";
 
-export interface Comment extends Base {
+export interface IComment extends Base {
     name: string;
     comment: string;
     rating: number;

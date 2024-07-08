@@ -17,7 +17,7 @@ const LINKS: NavigationLink[] = [
   { link: "/", label: "Home" },
   { link: "/about", label: "About" },
   { link: "/gallery", label: "Gallery" },
-  { link: "/virtual-map", label: "Virtual Map" },
+  { link: "https://capstone-pro-flax.vercel.app/", label: "Virtual Map" },
   { link: "/rating", label: "Rating" },
 ];
 

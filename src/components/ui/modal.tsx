@@ -35,8 +35,9 @@ const Modal: FC<ModalProps> = ({ image, isOpen, onClose, data }) => {
             >
                 <X />
             </Button>
-          <h2 className="text-2xl font-bold mb-4">{data?.information.judul_foto}</h2>
-          <p className="mb-7">{data?.information.deskripsi}</p>
+          <h2 className="text-2xl font-semibold mb-2">{data?.information.judul_foto}</h2>
+          <h2 className="text-lg font-medium mb-4">{data?.information.nama_lokasi}</h2>
+          <p className="font-light mb-7">{data?.information.deskripsi}</p>
           <Link href={`/rating/${data?.id_galery}`}>
             <Button>Comment</Button>
           </Link>

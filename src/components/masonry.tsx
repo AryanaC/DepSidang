@@ -3,37 +3,37 @@ import React from "react";
 interface MasonryGridProps {
   images: string[];
   columns: number;
-  rows: number;
 }
 
-const MasonryGrid: React.FC<MasonryGridProps> = ({
-  images,
-  columns = 4,
-  rows = 4,
-}) => {
-  const gridColumns = Array.from({ length: columns }, () => []);
+const MasonryGrid: React.FC<MasonryGridProps> = ({ columns, images }) => {
+  const columnWrapper: { [key: string]: JSX.Element[] } = {};
+  const result: JSX.Element[] = [];
 
-  images.forEach((image, index) => {
-    gridColumns[index % columns].push(image);
-  });
+  // Create array of empty arrays for each column
+  for (let i = 0; i < columns; i++) {
+    columnWrapper[`column${i}`] = [];
+  }
 
-  return (
-    <div className={`grid grid-cols-4 md:grid-cols-${rows} gap-4`}>
-      {gridColumns.map((column, colIndex) => (
-        <div key={colIndex} className="grid gap-4">
-          {column.map((image, imgIndex) => (
-            <div key={imgIndex}>
-              <img
-                className="h-full max-w-full bg-cover rounded-none"
-                src={image}
-                alt={`Gallery Image ${colIndex * columns + imgIndex}`}
-              />
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
+  // Distribute images into columns
+  for (let i = 0; i < images.length; i++) {
+    const column = i % columns;
+    columnWrapper[`column${column}`].push(
+      <div key={i} className="mb-2">
+        <img src={images[i]} alt={`Image ${i}`} className="w-full h-auto" />
+      </div>
+    );
+  }
+
+  // Wrap column content in a div
+  for (let i = 0; i < columns; i++) {
+    result.push(
+      <div key={i} className="flex-1 px-1">
+        {columnWrapper[`column${i}`]}
+      </div>
+    );
+  }
+
+  return <div className="flex">{result}</div>;
 };
 
 export default MasonryGrid;

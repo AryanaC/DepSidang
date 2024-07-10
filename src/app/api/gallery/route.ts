@@ -1,4 +1,4 @@
-import { axiosInstance } from "@/lib/actions";
+import { apiCall, axiosInstance } from "@/lib/actions";
 import { IGallery } from "@/types/gallery";
 import { GenericAbortSignal } from "axios";
 
@@ -7,11 +7,11 @@ export const getGalery = (params?: any, signal?: GenericAbortSignal) => {
 };
 
 export const createGalery = (data: IGallery) => {
-    return axiosInstance.post('/galery', data).then((response) => response.data);
+    return apiCall<IGallery>("GET", "/galery", data, undefined);
 };
 
 export const deleteGalery = (id: string) => {
-    return axiosInstance.delete(`/galery/${id}`).then((response) => response.data);
+    return apiCall<IGallery>("DELETE", `/admin/galery/${id}`, undefined, undefined);
 };
 
 export const updateGalery = (id: string, data: any) => {

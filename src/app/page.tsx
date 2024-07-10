@@ -1,10 +1,12 @@
 "use client";
+import Header from "@/components/header";
 import MasonryGrid from "@/components/masonry";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { Cormorant } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const italiana = Cormorant({ subsets: ["latin"], weight: ["400"] });
@@ -12,6 +14,7 @@ const italiana = Cormorant({ subsets: ["latin"], weight: ["400"] });
 export default function Home() {
   return (
     <main>
+      <Header />
       <HeroSection />
       <AboutSection />
       <PhotoAreaSection />
@@ -42,13 +45,15 @@ const HeroSection = () => {
         >
           Explore Virtual Map Puri Agung Kerambitan
         </h1>
-        <Button
-          variant={"default"}
-          size={"lg"}
-          className="rounded-full text-base font-normal px-9 py-6"
-        >
-          Virtual Map
-        </Button>
+        <Link href={"https://capstone-pro-flax.vercel.app/"}>
+          <Button
+            variant={"default"}
+            size={"lg"}
+            className="rounded-full text-base font-normal px-9 py-6"
+          >
+            Virtual Map
+          </Button>
+        </Link>
       </div>
     </section>
   );

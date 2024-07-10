@@ -5,7 +5,15 @@ export interface IComment extends Base {
     name: string;
     comment: string;
     rating: number;
-    replyComment: string;
-    tbGalery: IGallery;
-    idGalery: string;
+    reply_comment: string;
+    status: string;
 }
+
+export type ValidateData = {
+    is_valid: boolean;
+  };
+
+  export type ReplyData = {
+    reply_comment: string;
+  };
+  

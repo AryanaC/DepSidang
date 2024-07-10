@@ -1,5 +1,5 @@
-import { axiosInstance } from "@/lib/actions";
-import { IComment } from "@/types/comment";
+import { apiCall, axiosInstance } from "@/lib/actions";
+import { IComment, ReplyData, ValidateData } from "@/types/comment";
 import { GenericAbortSignal } from "axios";
 
 type CommentData = {
@@ -8,17 +8,9 @@ type CommentData = {
   comment: string;
   rating: number;
 };
-
-type ReplyData = {
-  replyComment: string;
-};
-
-type ValidateData = {
-  isValid: boolean;
-};
-
 export const getComments = (params?: any, signal?: GenericAbortSignal) => {
-  return axiosInstance.get<{ data: IComment[] }>('/admin/comment', { params, signal }).then((response) => response.data.data);
+  return apiCall<IComment[]>("GET", `/admin/comment`, undefined, params);
+  // return axiosInstance.get<{ data: IComment[] }>('/admin/comment', { params, signal }).then((response) => response.data.data);
 };
 
 export const createComment = (data: CommentData) => {
@@ -26,15 +18,15 @@ export const createComment = (data: CommentData) => {
 };
 
 export const updateReplyComment = (id: string, data: ReplyData) => {
-  return axiosInstance.put(`/admin/comment/${id}`, data).then((response) => response.data);
+  return apiCall<any>("PUT", `/admin/comment/${id}`, data, undefined);
 };
 
 export const deleteComment = (id: string) => {
-  return axiosInstance.delete(`/admin/comment/${id}`).then((response) => response.data);
+  return apiCall<any>("DELETE", `/admin/comment/${id}`, undefined, undefined);
 };
 
 export const validateComment = (id: string, data: ValidateData) => {
-  return axiosInstance.put(`/admin/comment/${id}`, data).then((response) => response.data);
+  return apiCall<any>("PUT", `/admin/comment/validate/${id}`, data, undefined);
 };
 
 export const createUserComment = (data: CommentData) => {

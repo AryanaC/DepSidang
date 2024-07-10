@@ -18,7 +18,7 @@ const LINKS: NavigationLink[] = [
   { link: "/about", label: "About" },
   { link: "/gallery", label: "Gallery" },
   { link: "https://capstone-pro-flax.vercel.app/", label: "Virtual Map" },
-  { link: "/rating", label: "Rating" },
+  { link: "/login", label: "Login" },
 ];
 
 const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {

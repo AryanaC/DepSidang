@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { IGallery } from "@/types/gallery";
-import { getGalery } from "../api/gallery/route";
+import { getGalery } from "../../api/gallery/route";
 import Image from "next/image";
 import { Comment } from "@/components/comment";
 

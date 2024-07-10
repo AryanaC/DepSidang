@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Italiana, Montserrat } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Header from "@/components/header";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "-",
 };
 
-export default function RootLayout({
+export default function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -19,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className}>
+      <Header />
         {children}
         </body>
     </html>

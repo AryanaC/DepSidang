@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Italiana, Montserrat } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header";
+import { Toaster } from "@/components/ui/toaster";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 const inter = Inter({ subsets: ["latin"] });

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   TooltipProvider,
@@ -40,62 +40,28 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { deleteGalery, getGalery } from "@/app/api/gallery/route";
+import { createGalery, deleteGalery, getGalery } from "@/app/api/gallery/route";
 import { IGallery } from "@/types/gallery";
 import Image from "next/image";
 import { List } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/components/sidebar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Dashboard() {
   const router = useRouter();
-  
+
   const logOut = () => {
     localStorage.removeItem("token");
-    router.replace("/login")
-  }
+    router.replace("/login");
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <div className="flex flex-col items-center gap-4 px-2 py-5">
-          <TooltipProvider>
-            <Link
-              href="#"
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <HomeIcon className="h-5 w-5" />
-                  <span className="sr-only">Dashboard</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard/comment"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <List className="h-5 w-5" />
-                  <span className="sr-only">Comments</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Comments</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </aside>
+      <Sidebar />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
@@ -194,31 +160,36 @@ const TableView = () => {
   const [data, setData] = useState<IGallery[]>([]);
   const [loading, setLoading] = useState(true);
 
-
-  const handleDelete = async (id:any) => {
+  const handleDelete = async (id: any) => {
     const response = await deleteGalery(id);
     console.log(response);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getGalery();
-        setData(result);
-      } catch (error) {
-        console.error("Error fetching information data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const result = await getGalery();
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching galery data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data Foto</CardTitle>
+        <CardTitle>
+          <div className="flex justify-between">
+            <h1>Data Comments</h1>
+            <CreateGalery onCreated={fetchData} />
+          </div>
+        </CardTitle>
         <CardDescription>Table of data</CardDescription>
       </CardHeader>
       <CardContent>
@@ -232,27 +203,110 @@ const TableView = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-          {data.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Image width={100} height={100} src={item.image} alt="Foto" className="w-16 h-16 object-cover rounded" />
-                    </TableCell>
-                    <TableCell>{item.information.judul_foto}</TableCell>
-                    <TableCell>{item.information.nama_lokasi}</TableCell>
-                    <TableCell>{item.information.deskripsi}</TableCell>
-                    <TableCell>
-                      <Button onClick={() => handleDelete(item.id_galery)} variant="outline" size="sm">
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+            {data.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Image
+                    width={100}
+                    height={100}
+                    src={item.image}
+                    alt="Foto"
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </TableCell>
+                <TableCell>{item.information.judul_foto}</TableCell>
+                <TableCell>{item.information.nama_lokasi}</TableCell>
+                <TableCell>{item.information.deskripsi}</TableCell>
+                <TableCell>
+                  <Button
+                    onClick={() => handleDelete(item.id_galery)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </CardContent>
     </Card>
   );
+};
+
+interface CreateGaleryProps {
+  onCreated: () => void;
 }
+
+const CreateGalery = ({ onCreated }: CreateGaleryProps) => {
+  const [informationId, setInformationId] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setImage(event.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!informationId || !image) {
+      toast({
+        title: "Error",
+        description: "Please provide both information ID and image.",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("information_id", informationId);
+    formData.append("image", image);
+
+    try {
+      await createGalery(formData);
+      toast({
+        title: "Success",
+        description: "Galery created successfully.",
+      });
+      onCreated();
+      setIsOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create galery.",
+      });
+      console.error("Error creating galery:", error);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="default" onClick={() => setIsOpen(true)}>Tambah</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Galery</DialogTitle>
+          <DialogDescription>Fill out the form below to create a new galery item.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="information_id" className="text-right">Information ID</Label>
+            <Input id="information_id" value={informationId} onChange={(e) => setInformationId(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="image" className="text-right">Image</Label>
+            <Input type="file" id="image" onChange={handleFileChange} className="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" onClick={handleSubmit}>Save changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 function HomeIcon(props: any) {
   return (

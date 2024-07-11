@@ -11,7 +11,7 @@ const nextConfig = {
     ],
   },
   env: {
-    API_URL: "http://localhost:4040",
+    API_URL: "https://mfqr4vd4-4040.asse.devtunnels.ms",
   },
 };
 

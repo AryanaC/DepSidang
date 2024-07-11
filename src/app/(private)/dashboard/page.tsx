@@ -44,8 +44,15 @@ import { deleteGalery, getGalery } from "@/app/api/gallery/route";
 import { IGallery } from "@/types/gallery";
 import Image from "next/image";
 import { List } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const router = useRouter();
+  
+  const logOut = () => {
+    localStorage.removeItem("token");
+    router.replace("/login")
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
@@ -247,7 +254,7 @@ const TableView = () => {
   );
 }
 
-function HomeIcon(props) {
+function HomeIcon(props: any) {
   return (
     <svg
       {...props}
@@ -267,7 +274,7 @@ function HomeIcon(props) {
   );
 }
 
-function Package2Icon(props) {
+function Package2Icon(props: any) {
   return (
     <svg
       {...props}
@@ -288,7 +295,7 @@ function Package2Icon(props) {
   );
 }
 
-function PackageIcon(props) {
+function PackageIcon(props: any) {
   return (
     <svg
       {...props}
@@ -310,7 +317,7 @@ function PackageIcon(props) {
   );
 }
 
-function PanelLeftIcon(props) {
+function PanelLeftIcon(props: any) {
   return (
     <svg
       {...props}
@@ -330,7 +337,7 @@ function PanelLeftIcon(props) {
   );
 }
 
-function ShoppingCartIcon(props) {
+function ShoppingCartIcon(props: any) {
   return (
     <svg
       {...props}

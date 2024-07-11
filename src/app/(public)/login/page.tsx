@@ -11,18 +11,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { loginUser } from "@/app/api/auth/route";
 import { setAuthToken } from "@/lib/actions";
-
-const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
+import { loginSchema } from "@/schemas/login-schema";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     const data = {
@@ -87,7 +83,6 @@ export default function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username..."
-                required
               />
             </div>
             <div className="grid gap-2">
@@ -107,7 +102,6 @@ export default function Login() {
                 value={password}
                 placeholder="Password..."
                 onChange={(e) => setPassword(e.target.value)}
-                required
               />
             </div>
             <CardFooter className="flex justify-end">

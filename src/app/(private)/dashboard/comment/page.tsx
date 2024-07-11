@@ -44,7 +44,7 @@ import { deleteGalery, getGalery } from "@/app/api/gallery/route";
 import { IGallery } from "@/types/gallery";
 import Image from "next/image";
 import { deleteComment, getComments, updateReplyComment, validateComment } from "@/app/api/comment/route";
-import { IComment, ValidateData } from "@/types/comment";
+import { IComment, ReplyData, ValidateData } from "@/types/comment";
 import Modal from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -52,50 +52,20 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { List } from "lucide-react";
+import Sidebar from "@/components/sidebar";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const router = useRouter();
+  
+  const logOut = () => {
+    localStorage.removeItem("token");
+    router.replace("/login")
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <div className="flex flex-col items-center gap-4 px-2 py-5">
-          <TooltipProvider>
-            <Link
-              href="#"
-              className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-              prefetch={false}
-            >
-              <Package2Icon className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
-            </Link>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <HomeIcon className="h-5 w-5" />
-                  <span className="sr-only">Dashboard</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard/comment"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  prefetch={false}
-                >
-                  <List className="h-5 w-5" />
-                  <span className="sr-only">Comments</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Comments</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </aside>
+      <Sidebar />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
@@ -113,7 +83,7 @@ export default function Dashboard() {
                   prefetch={false}
                 >
                   <Package2Icon className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">Acme Inc</span>
+                  <span className="sr-only"></span>
                 </Link>
                 <Link
                   href="#"
@@ -176,7 +146,9 @@ export default function Dashboard() {
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={logOut}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
@@ -230,9 +202,12 @@ const TableView = () => {
       }
     };
   
-    const handleValidate = async (id: string, status: boolean) => {
+    const handleValidate = async (id: string, status: string) => {
       try {
-        const response = await validateComment(id, { status });
+        const validData: ValidateData = {
+          is_valid: status == 'validated' ? false : true,
+        } 
+        const response = await validateComment(id, validData);
         setData(data.map((item) =>
           item.id === id ? { ...item, status: status ? 'validated' : 'unvalidated' } : item
         ));
@@ -285,7 +260,7 @@ const TableView = () => {
                         Delete
                       </Button>
                       <Button
-                        onClick={() => handleValidate(item.id, item.status === 'unvalidated')}
+                        onClick={() => handleValidate(item.id, item.status)}
                         variant="default"
                         size="sm"
                       >
@@ -302,22 +277,24 @@ const TableView = () => {
     );
   };
 
-type ReplyData = {
-    reply_comment: string;
-  };
-
   const Reply = ({ commentId }: { commentId: string }) => {
-    const [reply, setReply] = useState<ReplyData>();
+    const [reply, setReply] = useState<ReplyData>({
+      reply_comment: ""
+    });
+
+    const setReplyData = (e: any) => {
+      setReply({
+        reply_comment: e.target.value
+      })
+    }
   
     const handleReply = async () => {
       try {
         const response = await updateReplyComment(commentId, reply);
-        console.log(response); // Optional: Log response for debugging
         toast({
           title: "Success",
           description: "Reply updated successfully.",
         });
-        // Optionally, you can close the dialog or perform other actions upon successful update
       } catch (error) {
         console.error("Error updating reply:", error);
         toast({
@@ -346,8 +323,8 @@ type ReplyData = {
               </Label>
               <Textarea
                 id="reply"
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
+                value={reply.reply_comment}
+                onChange={setReplyData}
                 className="col-span-3"
               />
             </div>
@@ -362,7 +339,7 @@ type ReplyData = {
     );
   };
 
-function HomeIcon(props) {
+function HomeIcon(props: any) {
   return (
     <svg
       {...props}
@@ -382,7 +359,7 @@ function HomeIcon(props) {
   );
 }
 
-function Package2Icon(props) {
+function Package2Icon(props:any) {
   return (
     <svg
       {...props}
@@ -403,7 +380,7 @@ function Package2Icon(props) {
   );
 }
 
-function PackageIcon(props) {
+function PackageIcon(props:any) {
   return (
     <svg
       {...props}
@@ -425,7 +402,7 @@ function PackageIcon(props) {
   );
 }
 
-function PanelLeftIcon(props) {
+function PanelLeftIcon(props:any) {
   return (
     <svg
       {...props}
@@ -445,7 +422,7 @@ function PanelLeftIcon(props) {
   );
 }
 
-function ShoppingCartIcon(props) {
+function ShoppingCartIcon(props:any) {
   return (
     <svg
       {...props}

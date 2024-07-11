@@ -85,7 +85,7 @@ export default function Login() {
                 placeholder="Username..."
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-2 mb-5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 <Link

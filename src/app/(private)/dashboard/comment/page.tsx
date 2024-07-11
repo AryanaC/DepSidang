@@ -244,7 +244,7 @@ const TableView = () => {
             <TableBody>
               {data.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.location}</TableCell>
+                  <TableCell>{item.galery.namalokasi}</TableCell>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.comment}</TableCell>
                   <TableCell>{item.rating}</TableCell>

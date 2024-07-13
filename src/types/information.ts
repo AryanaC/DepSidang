@@ -1,8 +1,8 @@
 import { Base } from "./base";
 
-export interface Information extends Base {
-    idLogin: number;
-    judul_foto: string;
-    nama_lokasi: string;
-    deskripsi: string;
+export interface IInformation extends Base {
+  id_information: string;
+  judul_foto: string;
+  nama_lokasi: string;
+  deskripsi: string;
 }

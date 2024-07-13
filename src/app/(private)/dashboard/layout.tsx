@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Italiana, Montserrat } from "next/font/google";
-import "../globals.css";
-import Header from "@/components/header";
+import { Inter, Montserrat } from "next/font/google";
+import "../../globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
@@ -12,6 +11,7 @@ export const metadata: Metadata = {
   description: "-",
 };
 
+
 export default function PublicLayout({
   children,
 }: Readonly<{
@@ -20,7 +20,6 @@ export default function PublicLayout({
   return (
     <html lang="en">
       <body className={montserrat.className}>
-        <Header />
         {children}
         <Toaster />
       </body>

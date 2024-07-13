@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -38,7 +32,6 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { createGalery, deleteGalery, getGalery } from "@/app/api/gallery/route";
 import { IGallery } from "@/types/gallery";
@@ -50,6 +43,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { IInformation } from "@/types/information";
+import { getInformation } from "@/app/api/information/route";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -61,9 +56,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <Sidebar />
+      <Sidebar active={0} />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">
@@ -74,15 +69,7 @@ export default function Dashboard() {
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
-                  href="#"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                  prefetch={false}
-                >
-                  <Package2Icon className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">Acme Inc</span>
-                </Link>
-                <Link
-                  href="#"
+                  href="/dashboard"
                   className="flex items-center gap-4 px-2.5 text-foreground"
                   prefetch={false}
                 >
@@ -90,20 +77,12 @@ export default function Dashboard() {
                   Dashboard
                 </Link>
                 <Link
-                  href="#"
+                  href="/dashboard/comment"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  Orders
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  Products
+                  <List className="h-5 w-5" />
+                  Comments
                 </Link>
               </nav>
             </SheetContent>
@@ -139,15 +118,14 @@ export default function Dashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={logOut}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
         <main className="w-full flex p-4 sm:p-6">
-          <div className="mt-4">
+          <div className="w-full mt-4 overflow-auto">
             <TableView />
           </div>
         </main>
@@ -182,24 +160,25 @@ const TableView = () => {
   }, []);
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>
           <div className="flex justify-between">
-            <h1>Data Comments</h1>
+            <h1>Data Galery</h1>
             <CreateGalery onCreated={fetchData} />
           </div>
         </CardTitle>
         <CardDescription>Table of data</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
+        <Table className="w-full">
           <TableHeader>
             <TableRow>
               <TableHead>Foto</TableHead>
               <TableHead>Judul</TableHead>
               <TableHead>Lokasi</TableHead>
               <TableHead>Deskripsi</TableHead>
+              <TableHead>...</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -220,7 +199,7 @@ const TableView = () => {
                 <TableCell>
                   <Button
                     onClick={() => handleDelete(item.id_galery)}
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
                   >
                     Delete
@@ -243,6 +222,26 @@ const CreateGalery = ({ onCreated }: CreateGaleryProps) => {
   const [informationId, setInformationId] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [informationOptions, setInformationOptions] = useState<IInformation[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchInformation();
+    }
+  }, [isOpen]);
+
+  const fetchInformation = async () => {
+    try {
+      const result = await getInformation();
+      setInformationOptions(result.data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch information.",
+      });
+      console.error("Error fetching information:", error);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -252,6 +251,7 @@ const CreateGalery = ({ onCreated }: CreateGaleryProps) => {
 
   const handleSubmit = async () => {
     if (!informationId || !image) {
+      console.log(informationId)
       toast({
         title: "Error",
         description: "Please provide both information ID and image.",
@@ -293,7 +293,17 @@ const CreateGalery = ({ onCreated }: CreateGaleryProps) => {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="information_id" className="text-right">Information ID</Label>
-            <Input id="information_id" value={informationId} onChange={(e) => setInformationId(e.target.value)} className="col-span-3" />
+            <select
+              id="information_id"
+              value={informationId}
+              onChange={(e) => setInformationId(e.target.value)}
+              className="col-span-3 border border-gray-300 rounded-md p-2"
+            >
+              <option value="" disabled>Select Information</option>
+              {informationOptions.map((info, i) => (
+                <option key={info.id_information} value={info.id_information}>{info.judul_foto}</option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="image" className="text-right">Image</Label>

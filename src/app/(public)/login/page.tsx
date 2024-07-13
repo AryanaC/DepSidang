@@ -75,7 +75,7 @@ export default function Login() {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-2">
+            <div className="grid gap-2 mb-5">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
@@ -88,13 +88,6 @@ export default function Login() {
             <div className="grid gap-2 mb-5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="text-sm font-medium underline underline-offset-4 hover:text-primary"
-                  prefetch={false}
-                >
-                  Forgot password?
-                </Link>
               </div>
               <Input
                 id="password"

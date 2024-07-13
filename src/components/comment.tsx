@@ -61,23 +61,22 @@ const CommentCard = ({ comment }: { comment: IComment }) => {
               ))}
             </div>
           </div>
-          <p className="text-neutral-800">{comment.comment}</p>
+          <p className="text-sm text-neutral-800">{comment.comment}</p>
         </div>
       </div>
-      {/* {comment.replies && comment.replies.map((reply) => (
-        <div key={reply.id} className="flex items-start gap-4 ml-14">
+      {comment.reply && (
+        <div key={comment.id} className="flex items-start gap-4 ml-14">
           <Avatar className="w-10 h-10 border">
-            <AvatarImage src={reply.avatar} />
-            <AvatarFallback>{reply.author.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{"A"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium">{reply.author}</h4>
+              <h4 className="font-medium">{"Administrator"}</h4>
             </div>
-            <p className="text-muted-foreground">{reply.text}</p>
+            <p className="text-sm text-neutral-800">{comment.reply}</p>
           </div>
         </div>
-      ))} */}
+      )}
     </>
   );
 };

@@ -51,7 +51,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { List } from "lucide-react";
+import { Check, List, ReplyIcon, Trash, Trash2, X } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/navigation";
 
@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <Sidebar />
+      <Sidebar active={1} />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
@@ -79,14 +79,6 @@ export default function Dashboard() {
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
                   href="#"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                  prefetch={false}
-                >
-                  <Package2Icon className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only"></span>
-                </Link>
-                <Link
-                  href="#"
                   className="flex items-center gap-4 px-2.5 text-foreground"
                   prefetch={false}
                 >
@@ -98,16 +90,8 @@ export default function Dashboard() {
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  Orders
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <PackageIcon className="h-5 w-5" />
-                  Products
+                  <List className="h-5 w-5" />
+                  Comments
                 </Link>
               </nav>
             </SheetContent>
@@ -143,9 +127,6 @@ export default function Dashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logOut}>
                 Logout
               </DropdownMenuItem>
@@ -153,7 +134,7 @@ export default function Dashboard() {
           </DropdownMenu>
         </header>
         <main className="w-full flex p-4 sm:p-6">
-          <div className="mt-4">
+          <div className="mt-4 overflow-auto">
             <TableView />
           </div>
         </main>
@@ -163,181 +144,192 @@ export default function Dashboard() {
 }
 
 const TableView = () => {
-    const [data, setData] = useState<IComment[]>([]);
-    const [loading, setLoading] = useState(true);
-  
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const result = await getComments();
-          setData(result.data);
-        } catch (error) {
-          console.error("Error fetching comments:", error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch comments.",
-          });
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      fetchData();
-    }, []);
-  
-    const handleDelete = async (id: string) => {
-      try {
-        const response = await deleteComment(id);
-        setData(data.filter((item) => item.id !== id));
-        toast({
-          title: "Success",
-          description: "Comment deleted successfully.",
-        });
-      } catch (error) {
-        console.error("Error deleting comment:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete comment.",
-        });
-      }
-    };
-  
-    const handleValidate = async (id: string, status: string) => {
-      try {
-        const validData: ValidateData = {
-          is_valid: status == 'validated' ? false : true,
-        } 
-        const response = await validateComment(id, validData);
-        setData(data.map((item) =>
-          item.id === id ? { ...item, status: status ? 'validated' : 'unvalidated' } : item
-        ));
-        toast({
-          title: "Success",
-          description: `Comment ${status ? 'validated' : 'unvalidated'} successfully.`,
-        });
-      } catch (error) {
-        console.error("Error validating comment:", error);
-        toast({
-          title: "Error",
-          description: "Failed to validate comment.",
-        });
-      }
-    };
-  
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Komentar</CardTitle>
-          <CardDescription>Table of comments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Lokasi</TableHead>
-                <TableHead>Nama</TableHead>
-                <TableHead>Komentar</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.galery.namalokasi}</TableCell>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.comment}</TableCell>
-                  <TableCell>{item.rating}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Reply commentId={item.id} />
-  
-                      <Button
-                        onClick={() => handleDelete(item.id)}
-                        variant="destructive"
-                        size="sm"
-                      >
-                        Delete
-                      </Button>
-                      <Button
-                        onClick={() => handleValidate(item.id, item.status)}
-                        variant="default"
-                        size="sm"
-                      >
-                        {item.status === 'unvalidated' ? 'Validate' : 'Unvalidate'}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    );
-  };
+  const [data, setData] = useState<IComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
+  const [currentCommentId, setCurrentCommentId] = useState<string | null>(null);
 
-  const Reply = ({ commentId }: { commentId: string }) => {
-    const [reply, setReply] = useState<ReplyData>({
-      reply_comment: ""
-    });
-
-    const setReplyData = (e: any) => {
-      setReply({
-        reply_comment: e.target.value
-      })
+  const fetchData = async () => {
+    try {
+      const result = await getComments();
+      setData(result.data);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch comments.",
+      });
+    } finally {
+      setLoading(false);
     }
-  
-    const handleReply = async () => {
-      try {
-        const response = await updateReplyComment(commentId, reply);
-        toast({
-          title: "Success",
-          description: "Reply updated successfully.",
-        });
-      } catch (error) {
-        console.error("Error updating reply:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update reply.",
-        });
-      }
-    };
-  
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">Reply</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Reply to Comment</DialogTitle>
-            <DialogDescription>
-              Enter your reply below and click "Save changes" when you're done.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="items-center gap-4">
-              <Label htmlFor="reply" className="text-right">
-                Reply Comment
-              </Label>
-              <Textarea
-                id="reply"
-                value={reply.reply_comment}
-                onChange={setReplyData}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex justify-end">
-            <Button type="submit" onClick={handleReply}>
-              Save changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteComment(id);
+      setData(data.filter((item) => item.id !== id));
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment.",
+      });
+    }
+  };
+
+  const handleValidate = async (id: string, status: string) => {
+    try {
+      const validData: ValidateData = {
+        is_valid: status === 'validated' ? false : true,
+      };
+      await validateComment(id, validData);
+      setData(data.map((item) =>
+        item.id === id ? { ...item, status: status === 'validated' ? 'unvalidated' : 'validated' } : item
+      ));
+      toast({
+        title: "Success",
+        description: `Comment ${status === 'validated' ? 'unvalidated' : 'validated'} successfully.`,
+      });
+    } catch (error) {
+      console.error("Error validating comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to change comment status.",
+      });
+    }
+  };
+
+  const openReplyDialog = (commentId: string) => {
+    setCurrentCommentId(commentId);
+    setReplyDialogOpen(true);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Data Komentar</CardTitle>
+        <CardDescription>Table of comments</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Lokasi</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead className="min-w-72 md:min-w-max">Komentar</TableHead>
+              <TableHead className="min-w-72 md:min-w-max">Balasan</TableHead>
+              <TableHead>Rating</TableHead>
+              <TableHead>...</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.galery.namalokasi}</TableCell>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.comment}</TableCell>
+                <TableCell>{item.reply}</TableCell>
+                <TableCell>{item.rating}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="blue" size="sm">Actions</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => openReplyDialog(item.id)}>
+                        <ReplyIcon className="w-4" /> Reply
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleValidate(item.id, item.status)}>
+                        {item.status === 'unvalidated' ? <Check className="w-4" /> : <X className="w-4" />}
+                        {item.status === 'unvalidated' ? 'Validate' : 'Unvalidate'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-500 flex items-center gap-2" onClick={() => handleDelete(item.id)}>
+                        <Trash2 className="w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+      {currentCommentId && (
+        <ReplyDialog
+          commentId={currentCommentId}
+          open={replyDialogOpen}
+          onClose={() => setReplyDialogOpen(false)}
+          fetch={fetchData}
+        />
+      )}
+    </Card>
+  );
+};
+
+const ReplyDialog = ({ commentId, open, onClose, fetch } : {commentId:string, open:any, onClose:any, fetch:any}) => {
+  const [reply, setReply] = useState<ReplyData>({ reply_comment: "" });
+
+  const setReplyData = (e: any) => {
+    setReply({ reply_comment: e.target.value });
+  };
+
+  const handleReply = async () => {
+    try {
+      await updateReplyComment(commentId, reply);
+      fetch();
+      toast({
+        title: "Success",
+        description: "Reply updated successfully.",
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error updating reply:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update reply.",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Reply to Comment</DialogTitle>
+          <DialogDescription>
+            Enter your reply below and click "Save changes" when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="items-center gap-4">
+            <Label htmlFor="reply" className="text-right">
+              Reply Comment
+            </Label>
+            <Textarea
+              id="reply"
+              value={reply.reply_comment}
+              onChange={setReplyData}
+              className="col-span-3"
+            />
+          </div>
+        </div>
+        <DialogFooter className="flex justify-end">
+          <Button type="submit" onClick={handleReply}>
+            Save changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 function HomeIcon(props: any) {
   return (

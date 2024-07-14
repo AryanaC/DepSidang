@@ -232,16 +232,16 @@ const TableView = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem
-                        className="text-red-500 flex items-center gap-2"
-                        onClick={() => handleDelete(item.id_galery)}
-                      >
-                        <Trash2 className="w-4" /> Delete
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
                         className="flex items-center gap-2"
                         onClick={() => triggerUpdateDialog(item)}
                       >
                         <Pen className="w-4" /> Update Galery
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-500 flex items-center gap-2"
+                        onClick={() => handleDelete(item.id_galery)}
+                      >
+                        <Trash2 className="w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

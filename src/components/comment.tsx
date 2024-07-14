@@ -17,6 +17,7 @@ export function Comment() {
         setLoading(false);
       } catch (error) {
         toast({
+          variant: "destructive",
           title: "Error",
           description: "Failed to fetch comments. Please try again.",
         });

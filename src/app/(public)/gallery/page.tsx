@@ -3,10 +3,7 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { SVGProps, useEffect, useState } from "react";
 import { IGallery } from "@/types/gallery";

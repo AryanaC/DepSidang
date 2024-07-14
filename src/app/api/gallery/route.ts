@@ -22,6 +22,13 @@ export const deleteGalery = (id: string) => {
     return apiCall<IGallery>("DELETE", `/admin/galery/${id}`, undefined, undefined);
 };
 
-export const updateGalery = (id: string, data: any) => {
-    return axiosInstance.put(`/galery/${id}`, data).then((response) => response.data);
+export const updateGalery = (id: string, data: FormData) => {
+    const token = localStorage.getItem('token');
+    setAuthToken(token);
+
+    return axiosInstance.put(`/admin/galery/${id}`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }).then((response) => response.data);
 };

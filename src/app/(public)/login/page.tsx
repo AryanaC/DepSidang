@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { loginUser } from "@/app/api/auth/route";
 import { setAuthToken } from "@/lib/actions";
 import { loginSchema } from "@/schemas/login-schema";
@@ -45,6 +44,7 @@ export default function Login() {
         router.push("/dashboard");
       } else {
         toast({
+          variant: "destructive",
           title: "Error",
           description: "Invalid username or password.",
         });
@@ -53,14 +53,16 @@ export default function Login() {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => {
           toast({
+            variant: "destructive",
             title: "Validation Error",
             description: err.message,
           });
         });
       } else {
         toast({
+          variant: "destructive",
           title: "Error",
-          description: "An error occurred. Please try again.",
+          description: "Invalid username or password.",
         });
       }
     }

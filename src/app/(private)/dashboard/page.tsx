@@ -33,24 +33,27 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { createGalery, deleteGalery, getGalery } from "@/app/api/gallery/route";
+import { deleteGalery, getGalery } from "@/app/api/gallery/route";
 import { IGallery } from "@/types/gallery";
 import Image from "next/image";
-import { List } from "lucide-react";
+import { List, LogOut, PanelLeftIcon, Pen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { IInformation } from "@/types/information";
-import { getInformation } from "@/app/api/information/route";
+import { HomeIcon } from "@/components/icons/all-icon";
+import CreateGalery from "@/components/galery/create";
+import UpdateGalery from "@/components/galery/update";
 
 export default function Dashboard() {
   const router = useRouter();
 
   const logOut = () => {
     localStorage.removeItem("token");
+    toast({
+      variant: "destructive",
+      title: "Logout",
+      description: `You have logged out.`,
+    });
     router.replace("/login");
   };
 
@@ -58,7 +61,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen w-full bg-muted/40">
       <Sidebar active={0} />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-      <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">
@@ -118,8 +121,11 @@ export default function Dashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logOut}>
-                Logout
+              <DropdownMenuItem
+                className="text-red-500 flex items-center gap-2"
+                onClick={logOut}
+              >
+                <LogOut className="w-4" /> Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -137,6 +143,9 @@ export default function Dashboard() {
 const TableView = () => {
   const [data, setData] = useState<IGallery[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openCreateDialog, setOpenCreateDialog] = useState<boolean>(false);
+  const [galeryToUpdate, setGaleryToUpdate] = useState<IGallery | null>();
+  const [openUpdateDialog, setOpenUpdateDialog] = useState<boolean>(false);
 
   const handleDelete = async (id: any) => {
     const response = await deleteGalery(id);
@@ -159,13 +168,31 @@ const TableView = () => {
     fetchData();
   }, []);
 
+  const triggerUpdateDialog = (item: IGallery) => {
+    setGaleryToUpdate(item);
+    setOpenUpdateDialog(true);
+  };
+
+  const closeUpdateDialog = () => {
+    setGaleryToUpdate(null);
+    setOpenUpdateDialog(false);
+    fetchData();
+  }
+
+  const closeCreateDialog = () => {
+    setOpenCreateDialog(false);
+    fetchData();
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>
           <div className="flex justify-between">
             <h1>Data Galery</h1>
-            <CreateGalery onCreated={fetchData} />
+            <Button variant={"default"} onClick={() => setOpenCreateDialog(true)}>
+              Tambah
+            </Button>
           </div>
         </CardTitle>
         <CardDescription>Table of data</CardDescription>
@@ -197,227 +224,41 @@ const TableView = () => {
                 <TableCell>{item.information.nama_lokasi}</TableCell>
                 <TableCell>{item.information.deskripsi}</TableCell>
                 <TableCell>
-                  <Button
-                    onClick={() => handleDelete(item.id_galery)}
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Delete
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="blue" size="sm">
+                        Actions
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        className="text-red-500 flex items-center gap-2"
+                        onClick={() => handleDelete(item.id_galery)}
+                      >
+                        <Trash2 className="w-4" /> Delete
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onClick={() => triggerUpdateDialog(item)}
+                      >
+                        <Pen className="w-4" /> Update Galery
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+        {galeryToUpdate && (
+        <UpdateGalery
+          galery={galeryToUpdate}
+          open={openUpdateDialog}
+          onClose={closeUpdateDialog}
+        />
+      )}
+      <CreateGalery open={openCreateDialog} onClose={closeCreateDialog} />
     </Card>
   );
 };
-
-interface CreateGaleryProps {
-  onCreated: () => void;
-}
-
-const CreateGalery = ({ onCreated }: CreateGaleryProps) => {
-  const [informationId, setInformationId] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [informationOptions, setInformationOptions] = useState<IInformation[]>([]);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchInformation();
-    }
-  }, [isOpen]);
-
-  const fetchInformation = async () => {
-    try {
-      const result = await getInformation();
-      setInformationOptions(result.data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch information.",
-      });
-      console.error("Error fetching information:", error);
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImage(event.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!informationId || !image) {
-      console.log(informationId)
-      toast({
-        title: "Error",
-        description: "Please provide both information ID and image.",
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("information_id", informationId);
-    formData.append("image", image);
-
-    try {
-      await createGalery(formData);
-      toast({
-        title: "Success",
-        description: "Galery created successfully.",
-      });
-      onCreated();
-      setIsOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create galery.",
-      });
-      console.error("Error creating galery:", error);
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="default" onClick={() => setIsOpen(true)}>Tambah</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create Galery</DialogTitle>
-          <DialogDescription>Fill out the form below to create a new galery item.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="information_id" className="text-right">Information ID</Label>
-            <select
-              id="information_id"
-              value={informationId}
-              onChange={(e) => setInformationId(e.target.value)}
-              className="col-span-3 border border-gray-300 rounded-md p-2"
-            >
-              <option value="" disabled>Select Information</option>
-              {informationOptions.map((info, i) => (
-                <option key={info.id_information} value={info.id_information}>{info.judul_foto}</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="image" className="text-right">Image</Label>
-            <Input type="file" id="image" onChange={handleFileChange} className="col-span-3" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={handleSubmit}>Save changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-function HomeIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
-function Package2Icon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
-      <path d="M12 3v6" />
-    </svg>
-  );
-}
-
-function PackageIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m7.5 4.27 9 5.15" />
-      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-      <path d="m3.3 7 8.7 5 8.7-5" />
-      <path d="M12 22V12" />
-    </svg>
-  );
-}
-
-function PanelLeftIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M9 3v18" />
-    </svg>
-  );
-}
-
-function ShoppingCartIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="8" cy="21" r="1" />
-      <circle cx="19" cy="21" r="1" />
-      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-    </svg>
-  );
-}

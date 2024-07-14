@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -38,30 +32,51 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { deleteGalery, getGalery } from "@/app/api/gallery/route";
-import { IGallery } from "@/types/gallery";
-import Image from "next/image";
-import { deleteComment, getComments, updateReplyComment, validateComment } from "@/app/api/comment/route";
-import { IComment, ReplyData, ValidateData } from "@/types/comment";
-import Modal from "@/components/ui/modal";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  deleteComment,
+  getComments,
+  updateReplyComment,
+  validateComment,
+} from "@/app/api/comment/route";
+import { IComment, ValidateData } from "@/types/comment";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, List, ReplyIcon, Trash, Trash2, X } from "lucide-react";
+import {
+  Check,
+  List,
+  LogOut,
+  ReplyIcon,
+  StarIcon,
+  Trash2,
+  X,
+} from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { replySchema } from "@/schemas/reply-schema";
 
 export default function Dashboard() {
   const router = useRouter();
-  
+
   const logOut = () => {
     localStorage.removeItem("token");
-    router.replace("/login")
-  }
+    toast({
+      variant: "destructive",
+      title: "Logout",
+      description: `You have logged out.`,
+    });
+    router.replace("/login");
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
@@ -127,8 +142,11 @@ export default function Dashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logOut}>
-                Logout
+              <DropdownMenuItem
+                className="text-red-500 flex items-center gap-2"
+                onClick={logOut}
+              >
+                <LogOut className="w-4" /> Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -156,6 +174,7 @@ const TableView = () => {
     } catch (error) {
       console.error("Error fetching comments:", error);
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Failed to fetch comments.",
       });
@@ -179,6 +198,7 @@ const TableView = () => {
     } catch (error) {
       console.error("Error deleting comment:", error);
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Failed to delete comment.",
       });
@@ -188,19 +208,29 @@ const TableView = () => {
   const handleValidate = async (id: string, status: string) => {
     try {
       const validData: ValidateData = {
-        is_valid: status === 'validated' ? false : true,
+        status: status === "validated" ? false : true,
       };
       await validateComment(id, validData);
-      setData(data.map((item) =>
-        item.id === id ? { ...item, status: status === 'validated' ? 'unvalidated' : 'validated' } : item
-      ));
+      setData(
+        data.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status: status === "validated" ? "unvalidated" : "validated",
+              }
+            : item
+        )
+      );
       toast({
         title: "Success",
-        description: `Comment ${status === 'validated' ? 'unvalidated' : 'validated'} successfully.`,
+        description: `Comment ${
+          status === "validated" ? "unvalidated" : "validated"
+        } successfully.`,
       });
     } catch (error) {
       console.error("Error validating comment:", error);
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Failed to change comment status.",
       });
@@ -222,11 +252,12 @@ const TableView = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Lokasi</TableHead>
-              <TableHead>Nama</TableHead>
-              <TableHead className="min-w-72 md:min-w-max">Komentar</TableHead>
-              <TableHead className="min-w-72 md:min-w-max">Balasan</TableHead>
-              <TableHead>Rating</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Lokasi</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Nama</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Komentar</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Balasan</TableHead>
+              <TableHead className="min-w-36">Rating</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>...</TableHead>
             </TableRow>
           </TableHeader>
@@ -237,21 +268,62 @@ const TableView = () => {
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.comment}</TableCell>
                 <TableCell>{item.reply}</TableCell>
-                <TableCell>{item.rating}</TableCell>
+                <TableCell>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <StarIcon
+                        key={index}
+                        className={`w-4 h-4 ${
+                          index < item.rating
+                            ? "fill-yellow-400"
+                            : "fill-muted stroke-muted-foreground"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <h1
+                    className={`w-fit p-[3px] ${
+                      item.status === "unvalidated"
+                        ? "bg-red-400/20 text-red-700"
+                        : "bg-green-400/30 text-green-700"
+                    } text-center text-sm font-medium rounded`}
+                  >
+                    {item.status}
+                  </h1>
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="blue" size="sm">Actions</Button>
+                      <Button variant="blue" size="sm">
+                        Actions
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => openReplyDialog(item.id)}>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onClick={() => openReplyDialog(item.id)}
+                      >
                         <ReplyIcon className="w-4" /> Reply
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleValidate(item.id, item.status)}>
-                        {item.status === 'unvalidated' ? <Check className="w-4" /> : <X className="w-4" />}
-                        {item.status === 'unvalidated' ? 'Validate' : 'Unvalidate'}
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onClick={() => handleValidate(item.id, item.status)}
+                      >
+                        {item.status === "unvalidated" ? (
+                          <Check className="w-4" />
+                        ) : (
+                          <X className="w-4" />
+                        )}
+                        {item.status === "unvalidated"
+                          ? "Validate"
+                          : "Unvalidate"}
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500 flex items-center gap-2" onClick={() => handleDelete(item.id)}>
+                      <DropdownMenuItem
+                        className="text-red-500 flex items-center gap-2"
+                        onClick={() => handleDelete(item.id)}
+                      >
                         <Trash2 className="w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -274,7 +346,12 @@ const TableView = () => {
   );
 };
 
-const ReplyDialog = ({ commentId, open, onClose, fetch } : {commentId:string, open:any, onClose:any, fetch:any}) => {
+
+interface ReplyData {
+  reply_comment: string;
+}
+
+const ReplyDialog = ({ commentId, open, onClose, fetch }: { commentId: string; open: any; onClose: any; fetch: any }) => {
   const [reply, setReply] = useState<ReplyData>({ reply_comment: "" });
 
   const setReplyData = (e: any) => {
@@ -283,6 +360,8 @@ const ReplyDialog = ({ commentId, open, onClose, fetch } : {commentId:string, op
 
   const handleReply = async () => {
     try {
+      replySchema.parse(reply);
+      
       await updateReplyComment(commentId, reply);
       fetch();
       toast({
@@ -291,11 +370,20 @@ const ReplyDialog = ({ commentId, open, onClose, fetch } : {commentId:string, op
       });
       onClose();
     } catch (error) {
-      console.error("Error updating reply:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update reply.",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: error.errors[0].message,
+        });
+      } else {
+        console.error("Error updating reply:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update reply.",
+        });
+      }
     }
   };
 
@@ -308,16 +396,16 @@ const ReplyDialog = ({ commentId, open, onClose, fetch } : {commentId:string, op
             Enter your reply below and click "Save changes" when you're done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-1 gap-4 py-4">
           <div className="items-center gap-4">
-            <Label htmlFor="reply" className="text-right">
+            <Label htmlFor="reply" className="pb-2">
               Reply Comment
             </Label>
             <Textarea
               id="reply"
               value={reply.reply_comment}
               onChange={setReplyData}
-              className="col-span-3"
+              className=""
             />
           </div>
         </div>
@@ -351,7 +439,7 @@ function HomeIcon(props: any) {
   );
 }
 
-function Package2Icon(props:any) {
+function Package2Icon(props: any) {
   return (
     <svg
       {...props}
@@ -372,7 +460,7 @@ function Package2Icon(props:any) {
   );
 }
 
-function PackageIcon(props:any) {
+function PackageIcon(props: any) {
   return (
     <svg
       {...props}
@@ -394,7 +482,7 @@ function PackageIcon(props:any) {
   );
 }
 
-function PanelLeftIcon(props:any) {
+function PanelLeftIcon(props: any) {
   return (
     <svg
       {...props}
@@ -414,7 +502,7 @@ function PanelLeftIcon(props:any) {
   );
 }
 
-function ShoppingCartIcon(props:any) {
+function ShoppingCartIcon(props: any) {
   return (
     <svg
       {...props}

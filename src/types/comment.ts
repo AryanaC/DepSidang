@@ -15,7 +15,7 @@ export interface IComment extends Base {
 }
 
 export type ValidateData = {
-    is_valid: boolean;
+    status: boolean;
   };
 
   export type ReplyData = {

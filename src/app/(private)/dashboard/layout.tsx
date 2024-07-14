@@ -19,7 +19,7 @@ export default function PublicLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={montserrat.className}>
+      <body className={inter.className}>
         {children}
         <Toaster />
       </body>

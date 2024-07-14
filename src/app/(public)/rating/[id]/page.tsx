@@ -17,17 +17,9 @@ import { Comment } from "@/components/comment";
 import { useState } from "react";
 import { createUserComment } from "@/app/api/comment/route";
 import { toast } from "@/components/ui/use-toast";
-import { z } from "zod";
 import { useParams } from "next/navigation";
-
-
-const commentSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1, "Name is required"),
-  comment: z.string().min(1, "Comment is required"),
-  rating: z.number().min(1, "Rating is required").max(5, "Rating must be between 1 and 5"),
-});
-
+import { commentSchema } from "@/schemas/comment-schema";
+import { z } from "zod";
 
 export default function Rating() {
   return (
@@ -71,12 +63,14 @@ const RatingSection = () => {
       if (error instanceof z.ZodError) {
         error.errors.forEach((err) => {
           toast({
+            variant: "destructive",
             title: "Validation Error",
             description: err.message,
           });
         });
       } else {
         toast({
+          variant: "destructive",
           title: "Error",
           description: "Failed to submit the comment. Please try again.",
         });

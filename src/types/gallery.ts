@@ -1,10 +1,11 @@
 import { Base } from "./base";
-import { Information } from "./information";
+import { IInformation } from "./information";
 
 export interface IGallery extends Base {
-    id_galery: String;
+    id_galery: string;
     rating: number;
-    information: Information;
+    information: IInformation;
     idInformation: string;
+    id_information: string;
     image: string;
 }

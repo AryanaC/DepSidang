@@ -110,14 +110,15 @@ const UpdateGalery = ({ galery, open, onClose }: UpdateOptions) => {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-1 items-center gap-2.5 mb-1.5">
-            <Label htmlFor="information_id">Information ID</Label>
+            <Label htmlFor="information_id">Information</Label>
             <select
               id="information_id"
               value={informationId}
               onChange={(e) => setInformationId(e.target.value)}
               className="col-span-3 border border-gray-300 rounded-md p-2"
+              disabled={true}
             >
-              <option value="" disabled>
+              <option value="">
                 Select Information
               </option>
               {informationOptions.map((info) => (

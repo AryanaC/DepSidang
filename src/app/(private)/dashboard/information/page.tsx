@@ -35,11 +35,8 @@ import {
 import { useEffect, useState } from "react";
 import {
   deleteComment,
-  getComments,
   updateReplyComment,
-  validateComment,
 } from "@/app/api/comment/route";
-import { IComment, ValidateData } from "@/types/comment";
 import {
   Dialog,
   DialogContent,
@@ -52,20 +49,22 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Check,
   List,
   LogOut,
+  Pen,
   ReplyIcon,
-  StarIcon,
   Trash2,
-  X,
 } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { replySchema } from "@/schemas/reply-schema";
+import { IInformation } from "@/types/information";
+import { deleteInformation, getInformation } from "@/app/api/information/route";
+import CreateInformation from "@/components/information/create";
+import UpdateInformation from "@/components/information/update";
 
-export default function DashboardComment() {
+export default function DashboardInformation() {
   const router = useRouter();
 
   const logOut = () => {
@@ -80,7 +79,7 @@ export default function DashboardComment() {
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <Sidebar active={1} />
+      <Sidebar active={2} />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
@@ -152,7 +151,7 @@ export default function DashboardComment() {
           </DropdownMenu>
         </header>
         <main className="w-full flex p-4 sm:p-6">
-          <div className="mt-4 overflow-auto">
+          <div className="w-full mt-4 overflow-auto">
             <TableView />
           </div>
         </main>
@@ -162,21 +161,22 @@ export default function DashboardComment() {
 }
 
 const TableView = () => {
-  const [data, setData] = useState<IComment[]>([]);
+  const [data, setData] = useState<IInformation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
-  const [currentCommentId, setCurrentCommentId] = useState<string | null>(null);
+  const [createInformationDialogOpen, setCreateInformationDialogOpen] = useState(false);
+  const [updateInformationDialogOpen, setUpdateInformationDialogOpen] = useState(false);
+  const [informationToUpdate, setInformationToUpdate] = useState<IInformation>();
 
   const fetchData = async () => {
     try {
-      const result = await getComments();
+      const result = await getInformation();
       setData(result.data);
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      console.error("Error fetching information:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch comments.",
+        description: "Failed to fetch information.",
       });
     } finally {
       setLoading(false);
@@ -189,110 +189,70 @@ const TableView = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteComment(id);
+      await deleteInformation(id);
       setData(data.filter((item) => item.id !== id));
       toast({
         title: "Success",
-        description: "Comment deleted successfully.",
+        description: "Information deleted successfully.",
       });
+      fetchData();
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      console.error("Error deleting Information:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete comment.",
+        description: "Failed to delete Information.",
       });
     }
   };
 
-  const handleValidate = async (id: string, status: string) => {
-    try {
-      const validData: ValidateData = {
-        status: status === "validated" ? false : true,
-      };
-      await validateComment(id, validData);
-      setData(
-        data.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                status: status === "validated" ? "unvalidated" : "validated",
-              }
-            : item
-        )
-      );
-      toast({
-        title: "Success",
-        description: `Comment ${
-          status === "validated" ? "unvalidated" : "validated"
-        } successfully.`,
-      });
-    } catch (error) {
-      console.error("Error validating comment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to change comment status.",
-      });
-    }
+  const openInformationCreateDialog = () => {
+    setCreateInformationDialogOpen(true);
   };
+  const closeCreateInformationDialog = () => {
+    setCreateInformationDialogOpen(false);
+    fetchData();
+  }
 
-  const openReplyDialog = (commentId: string) => {
-    setCurrentCommentId(commentId);
-    setReplyDialogOpen(true);
+
+  const openInformationUpdateDialog = (item: IInformation) => {
+    setInformationToUpdate(item);
+    setUpdateInformationDialogOpen(true);
   };
+  const closeUpdateInformationDialog = () => {
+    setUpdateInformationDialogOpen(false);
+    fetchData();
+  }
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Data Komentar</CardTitle>
-        <CardDescription>Table of comments</CardDescription>
+        <CardTitle>
+          <div className="flex justify-between">
+          Data Informasi
+          <Button onClick={() => openInformationCreateDialog()}>
+            Tambah
+          </Button>
+          </div>
+          </CardTitle>
+        <CardDescription>Table of information</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
+        <Table className="w-full">
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-72 md:min-w-52">Lokasi</TableHead>
-              <TableHead className="min-w-72 md:min-w-52">Nama</TableHead>
-              <TableHead className="min-w-72 md:min-w-52">Komentar</TableHead>
-              <TableHead className="min-w-72 md:min-w-52">Balasan</TableHead>
-              <TableHead className="min-w-36">Rating</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Judul</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Nama Lokasi</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Deskripsi</TableHead>
               <TableHead>...</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((item) => (
               <TableRow key={item.id}>
-                <TableCell>{item.galery.namalokasi}</TableCell>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.comment}</TableCell>
-                <TableCell>{item.reply}</TableCell>
-                <TableCell>
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <StarIcon
-                        key={index}
-                        className={`w-4 h-4 ${
-                          index < item.rating
-                            ? "fill-yellow-400"
-                            : "fill-muted stroke-muted-foreground"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <h1
-                    className={`w-fit p-[3px] ${
-                      item.status === "unvalidated"
-                        ? "bg-red-400/20 text-red-700"
-                        : "bg-green-400/30 text-green-700"
-                    } text-center text-sm font-medium rounded`}
-                  >
-                    {item.status}
-                  </h1>
-                </TableCell>
+                <TableCell>{item.judul_foto}</TableCell>
+                <TableCell>{item.nama_lokasi}</TableCell>
+                <TableCell>{item.deskripsi}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -303,26 +263,13 @@ const TableView = () => {
                     <DropdownMenuContent>
                       <DropdownMenuItem
                         className="flex items-center gap-2"
-                        onClick={() => openReplyDialog(item.id)}
+                        onClick={() => openInformationUpdateDialog(item)}
                       >
-                        <ReplyIcon className="w-4" /> Reply
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onClick={() => handleValidate(item.id, item.status)}
-                      >
-                        {item.status === "unvalidated" ? (
-                          <Check className="w-4" />
-                        ) : (
-                          <X className="w-4" />
-                        )}
-                        {item.status === "unvalidated"
-                          ? "Validate"
-                          : "Unvalidate"}
+                        <Pen className="w-4" /> Edit Information
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-500 flex items-center gap-2"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.id_information)}
                       >
                         <Trash2 className="w-4" /> Delete
                       </DropdownMenuItem>
@@ -334,14 +281,15 @@ const TableView = () => {
           </TableBody>
         </Table>
       </CardContent>
-      {currentCommentId && (
-        <ReplyDialog
-          commentId={currentCommentId}
-          open={replyDialogOpen}
-          onClose={() => setReplyDialogOpen(false)}
-          fetch={fetchData}
+        <CreateInformation
+          open={createInformationDialogOpen}
+          onClose={closeCreateInformationDialog}
         />
-      )}
+        <UpdateInformation
+          information={informationToUpdate}
+          open={updateInformationDialogOpen}
+          onClose={closeUpdateInformationDialog}
+        />
     </Card>
   );
 };

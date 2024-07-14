@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { HomeIcon, List, Package2Icon } from "lucide-react";
+import { HomeIcon, Info, List, Package2Icon } from "lucide-react";
 
 export default function Sidebar({ active }: { active: number }) {
   const menuItems = [
@@ -15,6 +15,12 @@ export default function Sidebar({ active }: { active: number }) {
       href: '/dashboard/comment',
       icon: List,
       label: 'Comments',
+    },
+    {
+      id: 2,
+      href: '/dashboard/information',
+      icon: Info,
+      label: 'Information',
     },
   ];
 

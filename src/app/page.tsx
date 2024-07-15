@@ -3,11 +3,14 @@ import Header from "@/components/header";
 import MasonryGrid from "@/components/masonry";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Instagram } from "lucide-react";
+import { IGallery } from "@/types/gallery";
+import { Instagram, StarIcon } from "lucide-react";
 import { Cormorant } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getHomePage } from "./api/any/route";
+import { VisitorFavorite } from "@/types/any";
 
 const italiana = Cormorant({ subsets: ["latin"], weight: ["400"] });
 
@@ -185,6 +188,24 @@ const PhotoAreaSection = () => {
  * Popular Section
  */
 const PopularSection = () => {
+  const [data, setData] = useState<VisitorFavorite[]>();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getHomePage();
+        setData(result);
+      } catch (error) {
+        console.error("Error fetching information data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <section className="min-h-screen bg-white">
       <h1 className="text-3xl md:text-5xl text-center font-thin uppercase mb-4">
@@ -194,62 +215,34 @@ const PopularSection = () => {
         Favorites
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-4 mb-2">
-        <div className="relative group">
-          <img
-            className="min-h-[550px] bg-cover brightness-[.65] transition-all ease-linear duration-300 group-hover:brightness-100"
-            src="https://images.unsplash.com/photo-1599777560450-e462cffc5368?q=80&w=2788&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-          />
-          <div className="absolute top-4 left-4 text-white">
-            <h1 className="text-2xl">The A</h1>
-          </div>
-          <div className="absolute bottom-4 left-4 text-white">
-            <p className="text-sm font-thin">Starting from usd</p>
-            <h1 className="text-2xl">$999,999</h1>
-          </div>
-        </div>
-        <div className="relative group">
-          <img
-            className="min-h-[550px] bg-cover brightness-[.65] transition-all ease-linear duration-300 group-hover:brightness-100"
-            src="https://plus.unsplash.com/premium_photo-1677474827617-6a7269f97574?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-          />
-          <div className="absolute top-4 left-4 text-white">
-            <h1 className="text-2xl">The B</h1>
-          </div>
-          <div className="absolute bottom-4 left-4 text-white">
-            <p className="text-sm font-thin">Starting from usd</p>
-            <h1 className="text-2xl">$999,999</h1>
-          </div>
-        </div>
-        <div className="relative group">
-          <img
-            className="min-h-[550px] bg-cover brightness-[.65] transition-all ease-linear duration-300 group-hover:brightness-100"
-            src="https://images.unsplash.com/photo-1598911096723-af003b4ea77a?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-          />
-          <div className="absolute top-4 left-4 text-white">
-            <h1 className="text-2xl">The C</h1>
-          </div>
-          <div className="absolute bottom-4 left-4 text-white">
-            <p className="text-sm font-thin">Starting from usd</p>
-            <h1 className="text-2xl">$999,999</h1>
-          </div>
-        </div>
-        <div className="relative group">
-          <img
-            className="min-h-[550px] bg-cover brightness-[.65] transition-all ease-linear duration-300 group-hover:brightness-100"
-            src="https://images.unsplash.com/photo-1521574873411-508db8dbe55f?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-          />
-          <div className="absolute top-4 left-4 text-white">
-            <h1 className="text-2xl">The D</h1>
-          </div>
-          <div className="absolute bottom-4 left-4 text-white">
-            <p className="text-sm font-thin">Starting from usd</p>
-            <h1 className="text-2xl">$999,999</h1>
-          </div>
-        </div>
+        {data &&
+          data?.map((item) => (
+            <div className="relative group">
+              <img
+                className="w-full min-h-[550px] h-full object-cover brightness-[.65] transition-all ease-linear duration-300 group-hover:brightness-100"
+                src={item.image}
+                alt=""
+              />
+              <div className="absolute top-4 left-4 text-white">
+                <div className="flex gap-[1px]">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <StarIcon
+                        key={index}
+                        className={`w-5 md:w-7 h-5 md:h-7 ${
+                          index < item.rating
+                            ? "fill-yellow-400 stroke-yellow-500"
+                            : "fill-transparent stroke-muted-foreground"
+                        }`}
+                      />
+                    ))}
+                  </div>
+              </div>
+              {/* <div className="absolute bottom-4 left-4 text-white">
+                <p className="text-sm font-thin">{item.rating}</p>
+                <h1 className="text-2xl">$999,999</h1>
+              </div> */}
+            </div>
+          ))}
       </div>
       <div className="flex justify-center">
         <Button
@@ -322,15 +315,14 @@ const FooterSection = () => {
   return (
     <section className="bg-neutral-950 p-7">
       <div className="flex flex-col justify-center items-center border-b p-10">
-        <div className="grid grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div>
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4063.6680679150845!2d115.07731207518172!3d-8.547020186645682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x504576ba6f0b7cd%3A0xc30c2c19422036d6!2sPuri%20Agung%20Kerambitan!5e1!3m2!1sen!2sid!4v1720103697198!5m2!1sen!2sid"
-              width="500"
-              height="450"
               allowFullScreen={false}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
+              className="w-full md:w-[500px] h-full md:h-[400px]"
             ></iframe>
           </div>
           <div className="flex flex-col justify-center text-white">

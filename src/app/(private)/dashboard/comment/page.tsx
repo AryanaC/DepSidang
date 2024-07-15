@@ -277,7 +277,7 @@ const TableView = () => {
                         key={index}
                         className={`w-4 h-4 ${
                           index < item.rating
-                            ? "fill-yellow-400"
+                            ? "fill-yellow-400 stroke-yellow-950"
                             : "fill-muted stroke-muted-foreground"
                         }`}
                       />

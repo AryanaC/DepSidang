@@ -33,19 +33,24 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { deleteGalery, getGalery } from "@/app/api/gallery/route";
-import { IGallery } from "@/types/gallery";
-import Image from "next/image";
-import { List, LogOut, PanelLeftIcon, Pen, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Sidebar from "@/components/sidebar";
 import { toast } from "@/components/ui/use-toast";
+import {
+  List,
+  LogOut,
+  PanelLeftIcon,
+  Pen,
+  Trash2,
+} from "lucide-react";
+import Sidebar from "@/components/sidebar";
+import { useRouter } from "next/navigation";
+import { IMonument } from "@/types/monument";
+import { deleteMonument, getMonument } from "@/app/api/monument/route";
+import CreateMonument from "@/components/monument/create";
+import UpdateMonument from "@/components/monument/update";
 import { HomeIcon } from "@/components/icons/all-icon";
-import CreateGalery from "@/components/galery/create";
-import UpdateGalery from "@/components/galery/update";
-import ConfirmationAlertDialog from "@/components/confirmation-dialog";
+import Image from "next/image";
 
-export default function Dashboard() {
+export default function DashboardMonument() {
   const router = useRouter();
 
   const logOut = () => {
@@ -53,14 +58,14 @@ export default function Dashboard() {
     toast({
       variant: "destructive",
       title: "Logout",
-      description: `You have logged out.`,
+      description: "You have logged out.",
     });
     router.replace("/login");
   };
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
-      <Sidebar active={0} />
+      <Sidebar active={3} />
       <div className="w-full flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="w-full sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
@@ -73,7 +78,7 @@ export default function Dashboard() {
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
-                  href="/dashboard"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-foreground"
                   prefetch={false}
                 >
@@ -81,7 +86,7 @@ export default function Dashboard() {
                   Dashboard
                 </Link>
                 <Link
-                  href="/dashboard/comment"
+                  href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
@@ -142,50 +147,26 @@ export default function Dashboard() {
 }
 
 const TableView = () => {
-  const [data, setData] = useState<IGallery[]>([]);
+  const [data, setData] = useState<IMonument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openCreateDialog, setOpenCreateDialog] = useState<boolean>(false);
-  const [galeryToUpdate, setGaleryToUpdate] = useState<IGallery | null>();
-  const [openUpdateDialog, setOpenUpdateDialog] = useState<boolean>(false);
-  const [confirmDeleteDialog, setConfirmDeleteDialog] =
-    useState<boolean>(false);
-  const [galeryToDelete, setGaleryToDelete] = useState<string | null>(null);
-
-  const handleDelete = (id: string) => {
-    setGaleryToDelete(id);
-    setConfirmDeleteDialog(true);
-  };
-
-  const confirmDelete = async () => {
-    if (galeryToDelete) {
-      try {
-        await deleteGalery(galeryToDelete);
-        fetchData();
-        toast({
-          title: "Success",
-          description: `Gallery deleted successfully.`,
-        });
-      } catch (error) {
-        console.error("Error delete gallery:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Fail to delete gallery.",
-        });
-      } finally {
-        setConfirmDeleteDialog(false);
-        setGaleryToDelete(null);
-      }
-    }
-  };
+  const [createMonumentDialogOpen, setCreateMonumentDialogOpen] =
+    useState(false);
+  const [updateMonumentDialogOpen, setUpdateMonumentDialogOpen] =
+    useState(false);
+  const [monumentToUpdate, setMonumentToUpdate] = useState<IMonument | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await getGalery();
-      setData(result);
+      const result = await getMonument();
+      setData(result.data || []);
     } catch (error) {
-      console.error("Error fetching galery data:", error);
+      console.error("Error fetching monument:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch monument.",
+      });
     } finally {
       setLoading(false);
     }
@@ -195,19 +176,40 @@ const TableView = () => {
     fetchData();
   }, []);
 
-  const triggerUpdateDialog = (item: IGallery) => {
-    setGaleryToUpdate(item);
-    setOpenUpdateDialog(true);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMonument(id);
+      setData(data.filter((item) => item.id !== id));
+      toast({
+        title: "Success",
+        description: "Monument deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Error deleting Monument:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete Monument.",
+      });
+    }
   };
 
-  const closeUpdateDialog = () => {
-    setGaleryToUpdate(null);
-    setOpenUpdateDialog(false);
+  const openMonumentCreateDialog = () => {
+    setCreateMonumentDialogOpen(true);
+  };
+
+  const closeCreateMonumentDialog = () => {
+    setCreateMonumentDialogOpen(false);
     fetchData();
   };
 
-  const closeCreateDialog = () => {
-    setOpenCreateDialog(false);
+  const openMonumentUpdateDialog = (item: IMonument) => {
+    setMonumentToUpdate(item);
+    setUpdateMonumentDialogOpen(true);
+  };
+
+  const closeUpdateMonumentDialog = () => {
+    setUpdateMonumentDialogOpen(false);
     fetchData();
   };
 
@@ -216,33 +218,28 @@ const TableView = () => {
       <CardHeader>
         <CardTitle>
           <div className="flex justify-between">
-            <h1>Data Galery</h1>
-            <Button
-              variant={"default"}
-              onClick={() => setOpenCreateDialog(true)}
-            >
-              Tambah
-            </Button>
+            Data Monument
+            <Button onClick={openMonumentCreateDialog}>Tambah</Button>
           </div>
         </CardTitle>
-        <CardDescription>Table of data</CardDescription>
+        <CardDescription>Table of monument</CardDescription>
       </CardHeader>
       <CardContent>
         <Table className="w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Foto</TableHead>
-              <TableHead>Judul</TableHead>
-              <TableHead>Lokasi</TableHead>
-              <TableHead>Deskripsi</TableHead>
-              <TableHead>...</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Image</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Judul</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Nama Lokasi</TableHead>
+              <TableHead className="min-w-72 md:min-w-52">Deskripsi</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item, index) => (
-              <TableRow key={index}>
+            {data.map((item) => (
+              <TableRow key={item.id}>
                 <TableCell>
-                  <Image
+                <Image
                     width={100}
                     height={100}
                     src={item.image}
@@ -250,9 +247,9 @@ const TableView = () => {
                     className="w-16 h-16 object-cover rounded"
                   />
                 </TableCell>
-                <TableCell>{item.information.judul_foto}</TableCell>
-                <TableCell>{item.information.nama_lokasi}</TableCell>
-                <TableCell>{item.information.deskripsi}</TableCell>
+                <TableCell>{item.judul_foto}</TableCell>
+                <TableCell>{item.nama_lokasi}</TableCell>
+                <TableCell>{item.deskripsi}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -263,15 +260,9 @@ const TableView = () => {
                     <DropdownMenuContent>
                       <DropdownMenuItem
                         className="flex items-center gap-2"
-                        onClick={() => triggerUpdateDialog(item)}
+                        onClick={() => openMonumentUpdateDialog(item)}
                       >
-                        <Pen className="w-4" /> Update Galery
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-500 flex items-center gap-2"
-                        onClick={() => handleDelete(item.id_galery)}
-                      >
-                        <Trash2 className="w-4" /> Delete
+                        <Pen className="w-4" /> Edit Monument
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -281,21 +272,17 @@ const TableView = () => {
           </TableBody>
         </Table>
       </CardContent>
-      {galeryToUpdate && (
-        <UpdateGalery
-          galery={galeryToUpdate}
-          open={openUpdateDialog}
-          onClose={closeUpdateDialog}
+      <CreateMonument
+        open={createMonumentDialogOpen}
+        onClose={closeCreateMonumentDialog}
+      />
+      {monumentToUpdate && (
+        <UpdateMonument
+          monument={monumentToUpdate}
+          open={updateMonumentDialogOpen}
+          onClose={closeUpdateMonumentDialog}
         />
       )}
-      <ConfirmationAlertDialog
-        isOpen={confirmDeleteDialog}
-        onClose={() => setConfirmDeleteDialog(false)}
-        onConfirm={confirmDelete}
-        title="Are you absolutely sure?"
-        message="This action cannot be undone. This will permanently delete your data."
-      />
-      <CreateGalery open={openCreateDialog} onClose={closeCreateDialog} />
     </Card>
   );
 };

@@ -1,11 +1,7 @@
-"use client";
-
-import { createGalery } from "@/app/api/gallery/route";
-import { getInformation } from "@/app/api/information/route";
-import { IInformation } from "@/types/information";
-import { Label } from "@radix-ui/react-label";
-import { useState, useEffect } from "react";
-import { Button } from "../ui/button";
+"use client"
+import { createMonument } from "@/app/api/monument/route";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,21 +10,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { toast } from "../ui/use-toast";
-import { LoadingSpinner } from "../spinner";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
+import { LoadingSpinner } from "@/components/spinner";
+import { Label } from "@/components/ui/label";
+import { IInformation } from "@/types/information";
+import { getInformation } from "@/app/api/information/route";
 
-interface CreateGaleryProps {
+interface CreateMonumentProps {
   open: boolean;
   onClose: () => void;
 }
 
-export default function CreateGalery({ open, onClose }: CreateGaleryProps) {
-  const [informationId, setInformationId] = useState("");
+const CreateMonument: React.FC<CreateMonumentProps> = ({ open, onClose }) => {
+  const [informationId, setInformationId] = useState<string>("");
+  const [informationOptions, setInformationOptions] = useState<IInformation[]>([]);
   const [image, setImage] = useState<File | null>(null);
-  const [informationOptions, setInformationOptions] = useState<IInformation[]>(
-    []
-  );
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -57,15 +54,20 @@ export default function CreateGalery({ open, onClose }: CreateGaleryProps) {
     }
   };
 
+  const handleInformationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setInformationId(event.target.value);
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
+
     if (!informationId || !image) {
-      console.log(informationId);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Please provide both information ID and image.",
       });
+      setLoading(false);
       return;
     }
 
@@ -74,21 +76,21 @@ export default function CreateGalery({ open, onClose }: CreateGaleryProps) {
     formData.append("image", image);
 
     try {
-      await createGalery(formData);
-      setLoading(false);
+      await createMonument(formData);
       toast({
         title: "Success",
-        description: "Galery created successfully.",
+        description: "Monument created successfully.",
       });
       onClose();
     } catch (error) {
-      setLoading(false);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create galery.",
+        description: "Failed to create monument.",
       });
-      console.error("Error creating galery:", error);
+      console.error("Error creating monument:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,26 +98,24 @@ export default function CreateGalery({ open, onClose }: CreateGaleryProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Galery</DialogTitle>
+          <DialogTitle>Create Monument</DialogTitle>
           <DialogDescription>
-            Fill out the form below to create a new galery item.
+            Fill out the form below to create a new monument item.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-1 items-center gap-2.5 mb-1.5">
-            <Label htmlFor="information_id" className="">
-              Information ID
-            </Label>
+            <Label htmlFor="information_id">Information ID</Label>
             <select
               id="information_id"
               value={informationId}
-              onChange={(e) => setInformationId(e.target.value)}
+              onChange={handleInformationChange}
               className="col-span-3 border border-gray-300 rounded-md p-2"
             >
               <option value="" disabled>
                 Select Information
               </option>
-              {informationOptions.map((info, i) => (
+              {informationOptions.map((info) => (
                 <option key={info.id_information} value={info.id_information}>
                   {info.nama_lokasi}
                 </option>
@@ -133,11 +133,13 @@ export default function CreateGalery({ open, onClose }: CreateGaleryProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleSubmit}>
+          <Button type="button" onClick={handleSubmit} disabled={loading}>
             {loading ? <LoadingSpinner /> : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default CreateMonument;

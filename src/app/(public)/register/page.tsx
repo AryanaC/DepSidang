@@ -15,14 +15,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginUser } from "@/app/api/auth/route";
-import { setAuthToken } from "@/lib/actions";
-import { loginSchema } from "@/schemas/login-schema";
+import { registerUser } from "@/app/api/auth/route"; // Assume you have a register function
 import Link from "next/link";
+import { registerSchema } from "@/schemas/register-schema";
 
-export default function Login() {
+export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [retypePassword, setRetypePassword] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: any) => {
@@ -31,22 +31,21 @@ export default function Login() {
     const data = {
       username,
       password,
+      retype_password: retypePassword,
     };
 
     try {
-      loginSchema.parse(data);
-      const response = await loginUser(data);
+      registerSchema.parse(data);
+      const response = await registerUser(data);
 
       if (response.token) {
         const { token } = response;
 
         localStorage.setItem("token", token);
 
-        setAuthToken(token);
-
         toast({
           title: "Success",
-          description: "Logged in successfully.",
+          description: "Registered successfully.",
         });
 
         router.push("/dashboard");
@@ -54,7 +53,7 @@ export default function Login() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Invalid username or password.",
+          description: "Registration failed.",
         });
       }
     } catch (error) {
@@ -70,7 +69,7 @@ export default function Login() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Invalid username or password.",
+          description: "Registration failed.",
         });
       }
     }
@@ -80,9 +79,9 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+          <CardTitle className="text-2xl font-bold">Register</CardTitle>
           <CardDescription>
-            Enter your username and password to access your account.
+            Create a new account by filling out the form below.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -98,9 +97,7 @@ export default function Login() {
               />
             </div>
             <div className="grid gap-2 mb-5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -109,13 +106,23 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            <div className="grid gap-2 mb-5">
+              <Label htmlFor="retype_password">Retype Password</Label>
+              <Input
+                id="retype_password"
+                type="password"
+                value={retypePassword}
+                placeholder="Retype Password..."
+                onChange={(e) => setRetypePassword(e.target.value)}
+              />
+            </div>
             <CardFooter className="w-full flex justify-end">
               <div className="w-full space-y-3">
                 <Button type="submit" className="w-full">
-                  Sign In
+                  Register
                 </Button>
                 <span className="text-sm text-center flex justify-center">
-                  Dont have an account yet?&nbsp;<Link href={"/register"} className="text-blue-500 underline">Register</Link>
+                  Already have an account?&nbsp;<Link href={"/login"} className="text-blue-500 underline">Sign in</Link>
                 </span>
               </div>
             </CardFooter>

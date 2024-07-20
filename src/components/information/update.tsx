@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { IInformation } from "@/types/information";
 
 interface UpdateInformationProps {
-  information: IInformation;
+  information: IInformation | undefined;
   open: boolean;
   onClose: () => void;
 }
@@ -32,9 +32,9 @@ export default function UpdateInformation({
   open,
   onClose,
 }: UpdateInformationProps) {
-  const [judulFoto, setJudulFoto] = useState<string>(information?.judul_foto);
-  const [namaLokasi, setNamaLokasi] = useState<string>(information?.nama_lokasi);
-  const [deskripsi, setDeskripsi] = useState<string>(information?.deskripsi);
+  const [judulFoto, setJudulFoto] = useState<string>("");
+  const [namaLokasi, setNamaLokasi] = useState<string>("");
+  const [deskripsi, setDeskripsi] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -66,13 +66,15 @@ export default function UpdateInformation({
     console.log(data);
 
     try {
-      await updateInformation(information.id_information, data);
-      setLoading(false);
-      toast({
-        title: "Success",
-        description: "Information Updated successfully.",
-      });
-      onClose();
+      if(information) {
+        await updateInformation(information.id_information, data);
+        setLoading(false);
+        toast({
+          title: "Success",
+          description: "Information Updated successfully.",
+        });
+        onClose();
+      }
     } catch (error) {
       setLoading(false);
       toast({

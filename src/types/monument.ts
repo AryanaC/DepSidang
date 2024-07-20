@@ -1,8 +1,9 @@
 import { Base } from "./base";
 import { IInformation } from "./information";
 
-export interface Monument extends Base {
-    information: IInformation;
-    idInformation: string;
+export interface IMonument extends Base {
+    judul_foto: string;
+    nama_lokasi: string;
+    deskripsi: string;
     image: string;
 }
